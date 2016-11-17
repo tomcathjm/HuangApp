@@ -7,8 +7,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Window;
 
+import com.hjm.fragment.TestFragment;
 import com.hjm.fragment.VpSimpleFragment;
-import com.hjm.widget.ViewPagerIndicator;
+import com.hjm.widget.LineIndicator;
+import com.hjm.widget.TriangleIndicator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,11 +19,18 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private ViewPager mViewPager;
-    private ViewPagerIndicator mIndicator;
+    private TriangleIndicator mIndicator;
+
+
+    private ViewPager lineViewPager;
+    private LineIndicator lineIndicator;
 
     private List<String> mTitles = Arrays.asList("第一个","第二个","第三个","disige","diluge","dige","gegs","gegas","gsegrs");
     private List<VpSimpleFragment> mContents  = new ArrayList<>();
+    private List<TestFragment> lineContent  = new ArrayList<>();
+
     private FragmentPagerAdapter mAdapter;
+    private FragmentPagerAdapter lineAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
         initDatas();
 
         mViewPager.setAdapter(mAdapter);
+        lineViewPager.setAdapter(lineAdapter);
 
         /**
          * params
@@ -54,18 +64,27 @@ public class MainActivity extends AppCompatActivity {
          *
          */
         mIndicator.setViewPager(mViewPager,0,mTitles,4);
+        lineIndicator.setViewPager(lineViewPager,2,mTitles,3);
 
     }
 
     private void initViews() {
         mViewPager = (ViewPager) findViewById(R.id.id_viewpager);
-        mIndicator = (ViewPagerIndicator) findViewById(R.id.id_indicator);
+        mIndicator = (TriangleIndicator) findViewById(R.id.id_indicator);
+
+        lineIndicator = (LineIndicator) findViewById(R.id.line_indicator);
+        lineViewPager = (ViewPager) findViewById(R.id.line_viewpager);
     }
 
     private void initDatas() {
         for (String title:mTitles){
             VpSimpleFragment fragment = VpSimpleFragment.newInstance(title);
             mContents.add(fragment);
+        }
+
+        for (String title:mTitles){
+            TestFragment testFragment = TestFragment.newInstance(title);
+            lineContent.add(testFragment);
         }
 
         mAdapter = new FragmentPagerAdapter(getSupportFragmentManager()) {
@@ -77,6 +96,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public int getCount() {
                 return mContents.size();
+            }
+        };
+        lineAdapter = new FragmentPagerAdapter(getSupportFragmentManager()) {
+            @Override
+            public Fragment getItem(int position) {
+                return lineContent.get(position);
+            }
+
+            @Override
+            public int getCount() {
+                return lineContent.size();
             }
         };
     }

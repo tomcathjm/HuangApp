@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <attr name="visible_tab_count" format="integer"/>
-    <declare-styleable name="ViewPagerIndicator">
+    <declare-styleable name="TriangleIndicator">
         <attr name="visible_tab_count"/>
     </declare-styleable>
 </resources>

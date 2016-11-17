@@ -26,7 +26,7 @@ import java.util.List;
  * Created by huang on 2015/10/14.
  */
 
-public class ViewPagerIndicator extends LinearLayout {
+public class TriangleIndicator extends LinearLayout {
 
 
     private Paint mPaint; // 画笔
@@ -50,16 +50,16 @@ public class ViewPagerIndicator extends LinearLayout {
     private List<String> mTitles; // 用户自定义tab标题数据
 
 
-    public ViewPagerIndicator(Context context) {
+    public TriangleIndicator(Context context) {
         this(context, null);
     }
 
-    public ViewPagerIndicator(Context context, AttributeSet attrs) {
+    public TriangleIndicator(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         // 获取自定义 可见tab 数量   visible_tab_count
-        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ViewPagerIndicator);
-        mTabVisibleCount = a.getInt(R.styleable.ViewPagerIndicator_visible_tab_count, DEFAULT_COUNT_TAB);
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.TriangleIndicator);
+        mTabVisibleCount = a.getInt(R.styleable.TriangleIndicator_visible_tab_count, DEFAULT_COUNT_TAB);
         if (mTabVisibleCount < 0) {
             mTabVisibleCount = DEFAULT_COUNT_TAB;
         }
@@ -89,8 +89,9 @@ public class ViewPagerIndicator extends LinearLayout {
             lp.weight = 0;
             lp.width = getScreenWidth() / mTabVisibleCount;
             view.setLayoutParams(lp);
-        }
 
+        }
+        setTabClickEvent();
     }
 
     // 获取屏幕的宽度
@@ -116,7 +117,7 @@ public class ViewPagerIndicator extends LinearLayout {
     }
 
     /**
-     * ViewGroup 中当前空间大小发生改变的时候会会调的方法
+     * ViewGroup 中当前控件大小发生改变的时候会回调的方法
      *
      * @param w
      * @param h
@@ -167,10 +168,13 @@ public class ViewPagerIndicator extends LinearLayout {
             } else {
                 this.scrollTo((int) (tabWidth * (position + offset)), 0);
             }
+        }else{
+            if (position == 1 || position == 2){
+                this.scrollTo( 0 , 0);
+            }
         }
 
         invalidate(); // 重绘
-
     }
 
     /**
@@ -185,8 +189,8 @@ public class ViewPagerIndicator extends LinearLayout {
             for (String title : mTitles) {
                 addView(createdView(title));
             }
-
         }
+        setTabClickEvent();
     }
 
     /**
@@ -208,20 +212,22 @@ public class ViewPagerIndicator extends LinearLayout {
      * @param viewPager
      * @param defaultPosition
      */
-    public void setViewPager(ViewPager viewPager, int defaultPosition,List<String> titles,int visibleTabCount) {
+    public void setViewPager(ViewPager viewPager, int defaultPosition, List<String> titles, int visibleTabCount) {
+
         setVisibleTabCount(visibleTabCount);
         setTabTitle(titles);
+
         mViewPager = viewPager;
         viewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                 if (mListener != null) {
-                    mListener.onPagerScrolled(position,positionOffset,positionOffsetPixels);
+                    mListener.onPagerScrolled(position, positionOffset, positionOffsetPixels);
                 }
                 // 手指移动的时候 positionOffset 从 0 到 1 变化
                 // 从第一个tab滑动到第二个的时候 tabWidth * positionOffset
                 // 从第二个tab 滑动到第三个的时候 tabWidth * positionOffset + position * tabWidth
-                scroll(position,positionOffset);
+                scroll(position, positionOffset);
             }
 
             @Override
@@ -229,6 +235,7 @@ public class ViewPagerIndicator extends LinearLayout {
                 if (mListener != null) {
                     mListener.onPagerSelected(position);
                 }
+                setTextColor(position);
 
             }
 
@@ -239,7 +246,9 @@ public class ViewPagerIndicator extends LinearLayout {
                 }
             }
         });
+        // 初始化
         viewPager.setCurrentItem(defaultPosition);
+        setTextColor(defaultPosition);
     }
 
     /**
@@ -260,6 +269,7 @@ public class ViewPagerIndicator extends LinearLayout {
     }
 
     private static final int COLOR_TEXT_NORMAL = 0x77FFFFFF;
+    private static final int COLOR_TEXT_HIGHLIGHT = 0XFFFFFFFF;
 
     private View createdView(String title) {
         TextView textView = new TextView(getContext());
@@ -270,6 +280,45 @@ public class ViewPagerIndicator extends LinearLayout {
         textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
         textView.setTextColor(COLOR_TEXT_NORMAL);
         textView.setLayoutParams(lp);
+        for (int j = 0; j < getChildCount(); j++) {
+            final int a = j;
+            textView.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mViewPager.setCurrentItem(a);
+                }
+            });
+        }
         return textView;
     }
+
+    // 高亮文本(高亮文本之前先要把所有的置为未被选中的颜色)
+    private void setTextColor(int position) {
+        for (int i = 0; i < getChildCount(); i++) {
+            if (getChildAt(i) instanceof TextView) {
+                ((TextView) getChildAt(i)).setTextColor(COLOR_TEXT_NORMAL);
+            }
+        }
+        View childAt = getChildAt(position);
+        if (childAt instanceof TextView) {
+            ((TextView) childAt).setTextColor(COLOR_TEXT_HIGHLIGHT);
+        }
+    }
+
+    // 设置 tab 的点击事件
+    private void setTabClickEvent() {
+        int count = getChildCount();
+        for (int i = 0; i < count; i++) {
+            View view = getChildAt(i);
+            final int j = i;
+            view.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mViewPager.setCurrentItem(j);
+                }
+            });
+
+        }
+    }
+
 }
